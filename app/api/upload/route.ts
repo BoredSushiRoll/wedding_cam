@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const pin = formData.get('pin') as string;
 
     // The Server-Side Firewall
-    if (pin !== '2026') { 
+    if (pin !== '1209') { 
       return NextResponse.json({ error: "Invalid PIN" }, { status: 401 });
     }
     if (!file) {
