@@ -1,19 +1,36 @@
 "use client"
 
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 
-export const mockDatabase = [
-  { id: "1", imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80", message: "To the best couple ever! Wishing you a lifetime of happiness.", timestamp: "2 mins ago" },
-  { id: "2", imageUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80", message: "", timestamp: "15 mins ago" },
-  { id: "3", imageUrl: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80", message: "The open bar is fantastic =))))))", timestamp: "1 hour ago" },
-  { id: "4", imageUrl: "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=800&q=80", message: "We are shutting this place down tonight!", timestamp: "2 hours ago" },
-  { id: "5", imageUrl: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=800&q=80", message: "", timestamp: "3 hours ago" },
-  { id: "6", imageUrl: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80", message: "Beautiful ceremony. So happy for you two.", timestamp: "4 hours ago" },
-  { id: "7", imageUrl: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80", message: "Dancing shoes are officially on!", timestamp: "5 hours ago" }
-]
+type Photo = {
+  id: string;
+  imageUrl: string;
+  message: string;
+  timestamp: string;
+};
 
 export default function Gallery() {
-  const router = useRouter()
+  const router = useRouter();
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadGallery() {
+      try {
+        const response = await fetch('/api/gallery');
+        if (!response.ok) throw new Error("Fetch failed");
+        
+        const data = await response.json();
+        setPhotos(data.items || []);
+      } catch (error) {
+        console.error("Failed to load gallery data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadGallery();
+  }, []);
 
   return (
     <main className="app-container animate-fade-in">
@@ -23,34 +40,45 @@ export default function Gallery() {
       </header>
 
       <div className="scroll-track">
-        {mockDatabase.map((post) => (
-          <div 
-            key={post.id} 
-            className="card" 
-            style={{ cursor: 'pointer' }} 
-            onClick={() => router.push(`/gallery/${post.id}`)}
-          >
-            <div style={{ width: '100%', aspectRatio: '4/3', backgroundColor: '#000', pointerEvents: 'none', userSelect: 'none' }} onContextMenu={(e) => e.preventDefault()}>
-              <img 
-                src={post.imageUrl} 
-                alt="Wedding moment" 
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
-                draggable="false" 
-              />
-            </div>
-            
-            <div style={{ padding: '16px 20px', backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
-              {post.message && (
-                <p style={{ margin: '0 0 8px 0', fontSize: '15px', lineHeight: '1.4', color: 'var(--text-main)' }}>
-                  {post.message}
-                </p>
-              )}
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, display: 'block', textAlign: 'left' }}>
-                {post.timestamp}
-              </span>
-            </div>
+        {isLoading ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px' }}>Accessing Ledger...</p>
           </div>
-        ))}
+        ) : photos.length === 0 ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px' }}>No photos uploaded yet.</p>
+          </div>
+        ) : (
+          photos.map((post) => (
+            <div 
+              key={post.id} 
+              className="card" 
+              style={{ cursor: 'pointer' }} 
+              onClick={() => router.push(`/gallery/${post.id}`)}
+            >
+              <div style={{ width: '100%', aspectRatio: '4/3', backgroundColor: '#000', pointerEvents: 'none', userSelect: 'none' }} onContextMenu={(e) => e.preventDefault()}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={`/api/image/${post.id}`} 
+                  alt="Wedding moment" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
+                  draggable="false" 
+                />
+              </div>
+              
+              <div style={{ padding: '16px 20px', backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
+                {post.message && (
+                  <p style={{ margin: '0 0 8px 0', fontSize: '15px', lineHeight: '1.4', color: 'var(--text-main)' }}>
+                    {post.message}
+                  </p>
+                )}
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, display: 'block', textAlign: 'left' }}>
+                  {post.timestamp}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       <footer className="glass-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

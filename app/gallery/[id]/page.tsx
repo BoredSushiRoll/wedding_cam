@@ -1,19 +1,57 @@
 "use client"
 
-import { useRouter } from 'next/navigation'
-import { mockDatabase } from '../page'
-import { use } from 'react'
+import { useState, useEffect, use } from 'react';
+import { useRouter } from 'next/navigation';
+
+type Photo = {
+  id: string;
+  imageUrl: string;
+  message: string;
+  timestamp: string;
+};
 
 export default function SinglePhotoView({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter()
-  const resolvedParams = use(params)
-  const post = mockDatabase.find(p => p.id === resolvedParams.id)
+  const router = useRouter();
+  const resolvedParams = use(params);
+  
+  const [post, setPost] = useState<Photo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!post) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-base)', color: 'var(--text-main)' }}>Photo not found</div>
+  useEffect(() => {
+    async function loadSinglePhoto() {
+      try {
+        const response = await fetch('/api/gallery');
+        const data = await response.json();
+        // Scan the live database for the ID in the URL
+        const found = data.items?.find((p: Photo) => p.id === resolvedParams.id);
+        setPost(found || null);
+      } catch (error) {
+        console.error("Failed to fetch photo:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadSinglePhoto();
+  }, [resolvedParams.id]);
+
+  if (isLoading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '14px' }}>
+        Accessing Ledger...
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', color: 'var(--text-main)' }}>
+        Photo not found in database.
+      </div>
+    );
+  }
 
   return (
     <main className="app-container animate-fade-in">
-      
       <header className="glass-header">
         <button 
           onClick={() => router.push('/gallery')}
@@ -25,8 +63,9 @@ export default function SinglePhotoView({ params }: { params: Promise<{ id: stri
 
       <div className="scroll-track" style={{ justifyContent: 'center', padding: '80px 0 100px 0', backgroundColor: '#000' }}>
         <div style={{ pointerEvents: 'none', userSelect: 'none' }} onContextMenu={(e) => e.preventDefault()}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
-            src={post.imageUrl} 
+            src={`/api/image/${post.id}`} 
             alt="Wedding moment" 
             style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }} 
             draggable="false" 
@@ -81,7 +120,6 @@ export default function SinglePhotoView({ params }: { params: Promise<{ id: stri
           </a>
         </div>
       </footer>
-
     </main>
   )
 }
