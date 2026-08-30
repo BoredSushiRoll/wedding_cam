@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation' // Next.js App Router navigation
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const router = useRouter()
@@ -19,19 +19,9 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!hasAgreed) {
-      alert("You must agree to the terms first.")
-      return
-    }
-    if (!file) {
-      alert("Take a photo or choose one from your gallery.")
-      return
-    }
-    if (pin !== '1209') {
-      alert("Invalid PIN.")
-      return
-    }
+    if (!hasAgreed) return alert("You must agree to the terms first.")
+    if (!file) return alert("Take a photo or choose one from your gallery.")
+    if (pin !== '1209') return alert("Invalid PIN.")
 
     const formData = new FormData()
     formData.append('file', file)
@@ -39,98 +29,89 @@ export default function Home() {
     formData.append('pin', pin)
 
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-      
-      const data = await res.json()
-      
-      if (res.ok) {
-        // Boom. Payload delivered, route them to the gallery.
-        router.push('/gallery')
-      } else {
-        alert(`Access Denied: ${data.error}`)
-      }
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (res.ok) router.push('/gallery')
+      else alert("Access Denied.")
     } catch (err) {
       alert("Network transmission failed.")
     }
   }
 
   return (
-    <main className="w-full max-w-md mx-auto p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700 mt-10 relative">
-      
-      {/* Quick link to Gallery for non-uploaders */}
-      <button 
-        onClick={() => router.push('/gallery')}
-        className="absolute top-6 right-6 text-sm text-green-400 hover:text-green-300 font-semibold"
-      >
-        View Gallery &rarr;
-      </button>
+    <main className="app-container animate-fade-in">
+      <header className="glass-header">
+        <h1>Wedding Cam</h1>
+        <button className="btn-secondary" onClick={() => router.push('/gallery')}>
+          Gallery &rarr;
+        </button>
+      </header>
 
-      <h1 className="text-2xl font-bold text-center text-white mb-6 pr-20">Wedding Cam</h1>
-      
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        
-        <label className="flex items-start gap-3 p-3 bg-gray-900 border border-gray-700 rounded-lg cursor-pointer">
-          <input 
-            type="checkbox" 
-            checked={hasAgreed}
-            onChange={(e) => setHasAgreed(e.target.checked)}
-            className="mt-1 w-5 h-5 accent-green-500"
-          />
-          <span className="text-sm text-gray-300 leading-tight">
-            I agree to upload this photo to the newlyweds&apos; private drive and confirm I have the right to share it.
-          </span>
-        </label>
+      <div className="scroll-track" style={{ justifyContent: 'center' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          <label className="card" style={{ padding: '16px', display: 'flex', gap: '12px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={hasAgreed} onChange={(e) => setHasAgreed(e.target.checked)} style={{ transform: 'scale(1.2)', accentColor: 'var(--accent-green)' }}/>
+            <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+              I agree to upload this photo to the newlyweds&apos; private drive and confirm I have the right to share it.
+            </span>
+          </label>
 
-        <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg transition-colors ${hasAgreed ? 'border-gray-500 hover:border-green-500 cursor-pointer bg-gray-900' : 'border-gray-700 bg-gray-800 opacity-50 cursor-not-allowed'}`}>
-          <span className="text-gray-400 font-semibold px-4 text-center">
-            {file ? file.name : "Tap to Camera or Gallery"}
-          </span>
-          <input 
-            type="file" 
-            accept="image/*" 
-            className="hidden" 
-            onChange={handleFileChange}
-            disabled={!hasAgreed}
-          />
-        </label>
+          <label className="card" style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-color)', cursor: hasAgreed ? 'pointer' : 'not-allowed', opacity: hasAgreed ? 1 : 0.5 }}>
+            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
+              {file ? file.name : "Tap to Camera or Gallery"}
+            </span>
+            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} disabled={!hasAgreed}/>
+          </label>
 
-        <div className="flex flex-col">
-          <label className="text-sm text-gray-300 mb-1">Message for the Newlyweds</label>
-          <textarea 
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            maxLength={250}
-            rows={3}
-            placeholder="Write something nice... (max 250 chars)"
-            className="p-3 rounded-lg bg-gray-900 text-white border border-gray-600 focus:outline-none focus:border-green-500 resize-none"
-          />
-          <span className="text-xs text-right mt-1 text-gray-500">{message.length}/250</span>
-        </div>
+          <div>
+            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Message</label>
+            <textarea className="input-field" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={250} rows={3} style={{ resize: 'none', marginTop: '8px' }} placeholder="Write something nice..."/>
+          </div>
 
-        <div className="flex flex-col">
-          <label className="text-sm text-gray-300 mb-1">Table PIN</label>
-          <input 
-            type="password"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            maxLength={4}
-            placeholder="Introduceti codul PIN de pe masa"
-            className="p-3 rounded-lg bg-gray-900 text-white border border-gray-600 focus:outline-none focus:border-green-500 text-center tracking-widest text-xl"
-          />
-        </div>
+          <div>
+            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Table PIN</label>
+            <input type="password" className="input-field pin-input" value={pin} onChange={(e) => setPin(e.target.value)} maxLength={4} style={{ marginTop: '8px' }}/>
+          </div>
 
-        <button 
-          type="submit" 
-          disabled={!hasAgreed}
-          className={`w-full py-3 mt-2 font-bold rounded-lg transition-colors ${hasAgreed ? 'bg-green-600 hover:bg-green-500 text-white' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`}
-        >
+        </form>
+      </div>
+
+      <footer className="glass-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button className="btn-primary" onClick={handleSubmit} disabled={!hasAgreed}>
           Upload Photo
         </button>
-
-      </form>
+        
+        {/* The Signature Link */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
+          <a 
+            href="https://www.instagram.com/rares_dragan/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              textDecoration: 'none',
+              color: 'rgba(255, 255, 255, 0.7)', 
+              textShadow: '0px 1px 4px rgba(0,0,0,0.9)', 
+              transition: 'color 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-green)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
+          >
+            <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+              Made by Rareș Drăgan
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+              <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+              <line x1="6" x2="6" y1="2" y2="4" />
+              <line x1="10" x2="10" y1="2" y2="4" />
+              <line x1="14" x2="14" y1="2" y2="4" />
+            </svg>
+          </a>
+        </div>
+      </footer>
     </main>
   )
 }

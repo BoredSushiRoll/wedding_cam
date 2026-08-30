@@ -1,70 +1,85 @@
 "use client"
 
 import { useRouter } from 'next/navigation'
-import { mockDatabase } from '../page' // Pull the mock data from the parent gallery
-import { use } from 'react' // React hook to unwrap the params promise
+import { mockDatabase } from '../page'
+import { use } from 'react'
 
 export default function SinglePhotoView({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  
-  // Next 15 requires unwrapping the params object using React.use()
   const resolvedParams = use(params)
-  
-  // Find the exact photo in the database
   const post = mockDatabase.find(p => p.id === resolvedParams.id)
 
-  if (!post) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
-        <h1 className="text-2xl font-bold mb-4">Photo not found</h1>
-        <button onClick={() => router.push('/gallery')} className="text-green-500 underline">Go back</button>
-      </div>
-    )
-  }
+  if (!post) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-base)', color: 'var(--text-main)' }}>Photo not found</div>
 
   return (
-    <main className="flex flex-col h-[100dvh] w-full max-w-2xl mx-auto bg-gray-900 border-x border-gray-800">
+    <main className="app-container animate-fade-in">
       
-      {/* STICKY HEADER */}
-      <header className="flex-none flex justify-between items-center p-4 bg-gray-800 border-b border-gray-700 shadow-md z-10">
+      <header className="glass-header">
         <button 
           onClick={() => router.push('/gallery')}
-          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg transition-colors"
+          className="btn-secondary"
         >
           &larr; Back to Gallery
         </button>
       </header>
 
-      {/* SINGLE IMAGE CONTAINER */}
-      <div className="flex-1 overflow-y-auto bg-black flex flex-col justify-center">
-        <div 
-          className="relative w-full select-none pointer-events-none"
-          onContextMenu={(e) => e.preventDefault()} 
-        >
+      <div className="scroll-track" style={{ justifyContent: 'center', padding: '80px 0 100px 0', backgroundColor: '#000' }}>
+        <div style={{ pointerEvents: 'none', userSelect: 'none' }} onContextMenu={(e) => e.preventDefault()}>
           <img 
             src={post.imageUrl} 
             alt="Wedding moment" 
-            className="w-full h-auto object-contain max-h-[80vh]"
-            draggable="false"
+            style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }} 
+            draggable="false" 
           />
         </div>
         
-        {post.message && (
-          <div className="p-6 bg-gray-900 border-t border-gray-700">
-            <p className="text-gray-100 text-lg leading-relaxed">{post.message}</p>
-            <span className="text-gray-500 text-sm mt-3 block">{post.timestamp}</span>
-          </div>
-        )}
+        <div style={{ padding: '24px', backgroundColor: '#000' }}>
+          {post.message && (
+            <p style={{ margin: '0 0 12px 0', fontSize: '16px', lineHeight: '1.6', borderLeft: '2px solid var(--accent-green)', paddingLeft: '16px', fontStyle: 'italic', color: 'var(--text-main)' }}>
+              &quot;{post.message}&quot;
+            </p>
+          )}
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', textAlign: 'left' }}>
+            {post.timestamp}
+          </span>
+        </div>
       </div>
 
-      {/* STICKY FOOTER */}
-      <footer className="flex-none p-4 bg-gray-800 border-t border-gray-700 flex gap-4 z-10">
-        <button 
-          onClick={() => router.push('/')}
-          className="flex-1 py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition-colors"
-        >
+      <footer className="glass-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button className="btn-primary" onClick={() => router.push('/')}>
           Take Another Photo
         </button>
+        
+        {/* The Signature Link */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
+          <a 
+            href="https://www.instagram.com/rares_dragan/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              textDecoration: 'none',
+              color: 'rgba(255, 255, 255, 0.7)', 
+              textShadow: '0px 1px 4px rgba(0,0,0,0.9)', 
+              transition: 'color 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-green)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
+          >
+            <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+              Made by Rareș Drăgan
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+              <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+              <line x1="6" x2="6" y1="2" y2="4" />
+              <line x1="10" x2="10" y1="2" y2="4" />
+              <line x1="14" x2="14" y1="2" y2="4" />
+            </svg>
+          </a>
+        </div>
       </footer>
 
     </main>

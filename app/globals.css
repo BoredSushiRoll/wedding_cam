@@ -1,26 +1,164 @@
-@import "tailwindcss";
-
+/* --- BASE SYSTEM --- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg-base: #0a0a0a;
+  --bg-card: #171717;
+  --bg-input: #262626;
+  --text-main: #f5f5f5;
+  --text-muted: #a3a3a3;
+  --accent-green: #16a34a;
+  --accent-hover: #15803d;
+  --border-color: #333333;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  font-family: var(--font-inter), sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  justify-content: center;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-playfair), serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* --- UI COMPONENTS --- */
+.app-container {
+  width: 100%;
+  max-width: 600px;
+  height: 100dvh; /* Locks exactly to device height */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--bg-base);
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.glass-header, .glass-footer {
+  flex: none;
+  padding: 16px 24px;
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
+  position: absolute;
+  width: 100%;
+  box-sizing: border-box;
+}
+.glass-header { 
+  top: 0; 
+  border-bottom: 1px solid rgba(255,255,255,0.05); 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.glass-footer { 
+  bottom: 0; 
+  border-top: 1px solid rgba(255,255,255,0.05); 
+}
+
+/* The scrollable middle track */
+.scroll-track {
+  flex: 1;
+  overflow-y: auto;
+  padding: 80px 20px 100px 20px; /* Pads the content so it doesn't hide behind the glass */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  scrollbar-width: none; /* Firefox */
+}
+.scroll-track::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* --- TACTILE BUTTONS --- */
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background-color: var(--accent-green);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.2s ease;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+}
+.btn-primary:active {
+  transform: scale(0.96); /* Hardware tactile click response */
+}
+.btn-primary:disabled {
+  background-color: var(--bg-input);
+  color: #555;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-secondary:active {
+  transform: scale(0.95);
+}
+
+/* --- FORMS & CARDS --- */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  flex-shrink: 0; /* FORBIDS Flexbox from crushing the cards */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-field {
+  width: 100%;
+  padding: 16px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: white;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent-green);
+}
+
+.pin-input {
+  text-align: center;
+  letter-spacing: 12px;
+  font-size: 24px;
+  font-family: monospace;
 }
