@@ -52,12 +52,18 @@ export default function SinglePhotoView({ params }: { params: Promise<{ id: stri
 
   return (
     <main className="app-container animate-fade-in">
-      <header className="glass-header">
+      <header className="glass-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ margin: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}>Vizualizare</h1>
         <button 
           onClick={() => router.push('/gallery')}
           className="btn-secondary"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
-          &larr; Back to Gallery
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m12 19-7-7 7-7"/>
+            <path d="M19 12H5"/>
+          </svg>
+          Înapoi la Galerie
         </button>
       </header>
 
@@ -86,7 +92,7 @@ export default function SinglePhotoView({ params }: { params: Promise<{ id: stri
 
       <footer className="glass-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button className="btn-primary" onClick={() => router.push('/')}>
-          Take Another Photo
+          Încarcă Altă Poză
         </button>
         
         {/* The Signature Link */}

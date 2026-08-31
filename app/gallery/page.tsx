@@ -34,9 +34,19 @@ export default function Gallery() {
 
   return (
     <main className="app-container animate-fade-in">
-      <header className="glass-header">
-        <h1>Gallery</h1>
-        <button className="btn-secondary" onClick={() => router.push('/')}>&larr; Upload</button>
+      <header className="glass-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ margin: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}>Galerie</h1>
+        <button 
+          className="btn-secondary" 
+          onClick={() => router.push('/')}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m12 19-7-7 7-7"/>
+            <path d="M19 12H5"/>
+          </svg>
+          Home
+        </button>
       </header>
 
       <div className="scroll-track" style={{ paddingTop: '123px', paddingBottom: '110px' }}>
