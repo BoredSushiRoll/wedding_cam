@@ -39,7 +39,7 @@ export default function Gallery() {
         <button className="btn-secondary" onClick={() => router.push('/')}>&larr; Upload</button>
       </header>
 
-      <div className="scroll-track">
+      <div className="scroll-track" style={{ paddingTop: '80px' }}>
         {isLoading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px' }}>Accessing Ledger...</p>
