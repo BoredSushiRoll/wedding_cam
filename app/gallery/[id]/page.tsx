@@ -8,7 +8,7 @@ type Photo = {
   imageUrl: string;
   message: string;
   timestamp: string;
-  signature?: string; // New TS Definition
+  signature?: string; 
 };
 
 export default function SinglePhotoView({ params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +23,6 @@ export default function SinglePhotoView({ params }: { params: Promise<{ id: stri
       try {
         const response = await fetch('/api/gallery');
         const data = await response.json();
-        // Scan the live database for the ID in the URL
         const found = data.items?.find((p: Photo) => p.id === resolvedParams.id);
         setPost(found || null);
       } catch (error) {
@@ -37,23 +36,23 @@ export default function SinglePhotoView({ params }: { params: Promise<{ id: stri
 
   if (isLoading) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '14px' }}>
-        Accessing Ledger...
+      <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '14px' }}>
+        Se preia poza...
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000', color: 'var(--text-main)' }}>
-        Photo not found in database.
+      <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-main)' }}>
+        Poza nu există în baza de date.
       </div>
     );
   }
 
   return (
     <main className="app-container animate-fade-in">
-      <header className="glass-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header className="glass-header">
         <h1 style={{ margin: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}>Vizualizare</h1>
         <button 
           onClick={() => router.push('/gallery')}
@@ -68,36 +67,66 @@ export default function SinglePhotoView({ params }: { params: Promise<{ id: stri
         </button>
       </header>
 
-      <div className="scroll-track" style={{ justifyContent: 'center', padding: '80px 0 100px 0', backgroundColor: '#000' }}>
-        <div style={{ pointerEvents: 'none', userSelect: 'none' }} onContextMenu={(e) => e.preventDefault()}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src={`/api/image/${post.id}`} 
-            alt="Wedding moment" 
-            style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }} 
-            draggable="false" 
-          />
-        </div>
+      <div className="scroll-track" style={{ justifyContent: 'center' }}>
         
-        <div style={{ padding: '24px', backgroundColor: '#000' }}>
-          {/* CONDITIONAL MESSAGE & SIGNATURE RENDER */}
-          {(post.message || post.signature) && (
-            <div style={{ margin: '0 0 12px 0', borderLeft: '2px solid var(--accent-green)', paddingLeft: '16px' }}>
-              {post.message && (
-                <p style={{ margin: '0 0 4px 0', fontSize: '16px', lineHeight: '1.6', fontStyle: 'italic', color: 'var(--text-main)' }}>
-                  &quot;{post.message}&quot;
-                </p>
-              )}
-              {post.signature && (
-                <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  — {post.signature}
-                </p>
-              )}
-            </div>
-          )}
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', textAlign: 'left' }}>
-            {post.timestamp}
-          </span>
+        {/* THE POLAROID CARD */}
+        <div className="card" style={{ 
+          padding: '16px 16px 24px 16px', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '16px',
+          backgroundColor: 'var(--bg-card)' 
+        }}>
+          
+          {/* The Photo (Tight Hug Frame - No more black bars) */}
+          <div style={{ 
+            pointerEvents: 'none', 
+            userSelect: 'none',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            backgroundColor: 'transparent'
+          }} onContextMenu={(e) => e.preventDefault()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={`/api/image/${post.id}`} 
+              alt="Wedding moment" 
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '60vh', 
+                width: 'auto', 
+                height: 'auto', 
+                objectFit: 'contain',
+                borderRadius: '4px',
+                border: '1px solid rgba(44, 58, 41, 0.1)', /* Subtle physical photo edge */
+                display: 'block' 
+              }} 
+              draggable="false" 
+            />
+          </div>
+          
+          {/* The Ink (Resting on white cardstock) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {(post.message || post.signature) && (
+              <div style={{ borderLeft: '2px solid var(--accent-green)', paddingLeft: '12px' }}>
+                {post.message && (
+                  <p style={{ margin: '0 0 6px 0', fontSize: '16px', lineHeight: '1.5', fontStyle: 'italic', color: 'var(--text-main)' }}>
+                    &quot;{post.message}&quot;
+                  </p>
+                )}
+                {post.signature && (
+                  <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--accent-green)' }}>
+                    — {post.signature}
+                  </p>
+                )}
+              </div>
+            )}
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', textAlign: 'left' }}>
+              {post.timestamp}
+            </span>
+          </div>
+
         </div>
       </div>
 
@@ -117,8 +146,8 @@ export default function SinglePhotoView({ params }: { params: Promise<{ id: stri
               alignItems: 'center', 
               gap: '4px', 
               textDecoration: 'none',
-              color: 'rgba(255, 255, 255, 0.7)', 
-              textShadow: '0px 1px 4px rgba(0,0,0,0.9)', 
+              color: 'var(--text-muted)',
+              textShadow: '0px 1px 2px rgba(255,255,255,0.5)', 
               fontSize: '10px', 
               textTransform: 'uppercase', 
               letterSpacing: '0.5px', 

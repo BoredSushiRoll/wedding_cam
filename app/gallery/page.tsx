@@ -8,7 +8,7 @@ type Photo = {
   imageUrl: string;
   message: string;
   timestamp: string;
-  signature?: string; // New TS Definition
+  signature?: string; 
 };
 
 export default function Gallery() {
@@ -35,29 +35,29 @@ export default function Gallery() {
 
   return (
     <main className="app-container animate-fade-in">
-      <header className="glass-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ margin: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}>Galerie</h1>
+      <header className="glass-header">
+        <h1 style={{ margin: 0, lineHeight: 1, display: 'flex', alignItems: 'center', fontSize: '2rem' }}>Galerie</h1>
         <button 
           className="btn-secondary" 
           onClick={() => router.push('/')}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="m12 19-7-7 7-7"/>
             <path d="M19 12H5"/>
           </svg>
-          Home
+          Acasă
         </button>
       </header>
 
       <div className="scroll-track" style={{ paddingTop: '123px', paddingBottom: '110px' }}>
         {isLoading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <p style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px' }}>Accessing Ledger...</p>
+            <p style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px' }}>Se preiau pozele...</p>
           </div>
         ) : photos.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <p style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px' }}>No photos uploaded yet.</p>
+            <p style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px' }}>Nu s-a încărcat nimic!</p>
           </div>
         ) : (
           photos.map((post) => (
@@ -67,7 +67,7 @@ export default function Gallery() {
               style={{ cursor: 'pointer' }} 
               onClick={() => router.push(`/gallery/${post.id}`)}
             >
-              <div style={{ width: '100%', aspectRatio: '4/3', backgroundColor: '#000', pointerEvents: 'none', userSelect: 'none' }} onContextMenu={(e) => e.preventDefault()}>
+              <div style={{ width: '100%', aspectRatio: '4/3', backgroundColor: 'rgba(0,0,0,0.03)', pointerEvents: 'none', userSelect: 'none' }} onContextMenu={(e) => e.preventDefault()}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={`/api/image/${post.id}`} 
@@ -78,7 +78,6 @@ export default function Gallery() {
               </div>
               
               <div style={{ padding: '16px 20px', backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
-                {/* CONDITIONAL MESSAGE & SIGNATURE RENDER */}
                 {(post.message || post.signature) && (
                   <p style={{ margin: '0 0 8px 0', fontSize: '15px', lineHeight: '1.4', color: 'var(--text-main)' }}>
                     {post.message && <span>{post.message}</span>}
@@ -97,10 +96,9 @@ export default function Gallery() {
 
       <footer className="glass-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <button className="btn-primary" onClick={() => router.push('/')}>
-          Take Another Photo
+          Încarcă Altă Poză
         </button>
         
-        {/* The Signature Link */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
           <a 
             href="https://www.instagram.com/rares_dragan/" 
@@ -111,8 +109,7 @@ export default function Gallery() {
               alignItems: 'center', 
               gap: '4px', 
               textDecoration: 'none',
-              color: 'rgba(255, 255, 255, 0.7)', 
-              textShadow: '0px 1px 4px rgba(0,0,0,0.9)', 
+              color: 'var(--text-muted)', 
               fontSize: '10px', 
               textTransform: 'uppercase', 
               letterSpacing: '0.5px', 

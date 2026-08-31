@@ -9,12 +9,11 @@ export default function Home() {
   
   const [file, setFile] = useState<File | null>(null)
   const [message, setMessage] = useState('')
-  const [signature, setSignature] = useState('') // The new state variable
+  const [signature, setSignature] = useState('') 
   const [pin, setPin] = useState('')
   const [hasAgreed, setHasAgreed] = useState(false)
-  const [isUploading, setIsUploading] = useState(false) // The hardware lock
+  const [isUploading, setIsUploading] = useState(false) 
 
-  // Pointers to the hidden file inputs
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
@@ -27,17 +26,14 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validation checks
-    if (!hasAgreed) return alert("You must agree to the terms first.")
-    if (!file) return alert("Take a photo or choose one from your gallery.")
-    if (pin !== '1209') return alert("Invalid PIN.")
-    if (isUploading) return // Failsafe for rapid double-clicking
+    if (!hasAgreed) return alert("Trebuie să bifezi căsuța de sus prima dată!")
+    if (!file) return alert("Fă o poză sau alege una din galeria proprie!")
+    if (pin !== '1209') return alert("PIN Greșit!")
+    if (isUploading) return 
 
-    // Lock the UI
     setIsUploading(true)
 
     try {
-      // THE COMPRESSION ENGINE
       const options = {
         maxSizeMB: 3, 
         maxWidthOrHeight: 1920, 
@@ -46,14 +42,12 @@ export default function Home() {
       
       const compressedFile = await imageCompression(file, options)
 
-      // Build the payload with the crushed file
       const formData = new FormData()
       formData.append('file', compressedFile)
       formData.append('message', message)
-      formData.append('signature', signature) // Pushing signature to backend
+      formData.append('signature', signature) 
       formData.append('pin', pin)
 
-      // Transmit to Vercel
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       
       if (res.ok) {
@@ -72,13 +66,13 @@ export default function Home() {
   return (
     <main className="app-container animate-fade-in">
       <header className="glass-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ margin: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}>Wedding Cam</h1>
+        <h1 style={{ margin: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}>Crowd Cam</h1>
         <button 
           className="btn-secondary" 
           onClick={() => router.push('/gallery')}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
-          Gallery
+          Galerie
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 12h14"/>
             <path d="m12 5 7 7-7 7"/>
@@ -92,14 +86,12 @@ export default function Home() {
           <label className="card" style={{ padding: '16px', display: 'flex', gap: '12px', cursor: 'pointer' }}>
             <input type="checkbox" checked={hasAgreed} onChange={(e) => setHasAgreed(e.target.checked)} style={{ transform: 'scale(1.2)', accentColor: 'var(--accent-green)' }}/>
             <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-              I agree to upload this photo to the newlyweds&apos; private drive and confirm I have the right to share it.
+              Sunt de acord să încarc poza în drive-ul mirilor și confirm că dețin drepturile pentru poză.
             </span>
           </label>
 
-          {/* DUAL-INPUT UI BLOCK */}
           <div style={{ display: 'flex', gap: '12px', opacity: hasAgreed ? 1 : 0.5, pointerEvents: hasAgreed ? 'auto' : 'none' }}>
             
-            {/* Camera Trigger */}
             <div 
               className="card" 
               onClick={() => cameraInputRef.current?.click()}
@@ -109,10 +101,9 @@ export default function Home() {
                 <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
                 <circle cx="12" cy="13" r="3"/>
               </svg>
-              <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px' }}>Camera</span>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px' }}>Cameră Telefon</span>
             </div>
 
-            {/* Gallery Trigger */}
             <div 
               className="card" 
               onClick={() => galleryInputRef.current?.click()}
@@ -123,50 +114,46 @@ export default function Home() {
                 <circle cx="9" cy="9" r="2"/>
                 <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
               </svg>
-              <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px' }}>Gallery</span>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px' }}>Galerie Telefon</span>
             </div>
 
           </div>
 
-          {/* Filename Readout */}
           {file && (
             <div style={{ textAlign: 'center', color: 'var(--accent-green)', fontSize: '13px', fontWeight: 'bold' }}>
-              Selected: {file.name}
+              Ales: {file.name}
             </div>
           )}
 
-          {/* HIDDEN HARDWARE INPUTS */}
           <input 
             type="file" 
             accept="image/*" 
-            capture="environment" // iOS/Android OS Camera intercept
+            capture="environment" 
             style={{ display: 'none' }} 
             ref={cameraInputRef} 
             onChange={handleFileChange} 
           />
           <input 
             type="file" 
-            accept="image/*" // OS Gallery picker
+            accept="image/*" 
             style={{ display: 'none' }} 
             ref={galleryInputRef} 
             onChange={handleFileChange} 
           />
-          {/* END DUAL-INPUT BLOCK */}
 
           <div>
-            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Message</label>
-            <textarea className="input-field" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={250} rows={3} style={{ resize: 'none', marginTop: '8px' }} placeholder="Write something nice..."/>
-          </div>
-
-          {/* SIGNATURE BLOCK */}
-          <div>
-            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Signature (Optional)</label>
-            <input type="text" className="input-field" value={signature} onChange={(e) => setSignature(e.target.value)} maxLength={50} style={{ marginTop: '8px' }} placeholder="Your name(s)..."/>
+            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Mesaj pentru miri (Opțional)</label>
+            <textarea className="input-field" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={250} rows={3} style={{ resize: 'none', marginTop: '8px' }} placeholder="Scrie aici mesajul..."/>
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Table PIN</label>
-            <input type="password" className="input-field pin-input" value={pin} onChange={(e) => setPin(e.target.value)} maxLength={4} style={{ marginTop: '8px' }}/>
+            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Semnătură (Opțional)</label>
+            <input type="text" className="input-field" value={signature} onChange={(e) => setSignature(e.target.value)} maxLength={50} style={{ marginTop: '8px' }} placeholder="Un nume, o poreclă, un inside joke..."/>
+          </div>
+
+          <div>
+            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>PIN De La Masă</label>
+            <input type="password" className="input-field pin-input" value={pin} onChange={(e) => setPin(e.target.value)} maxLength={4} style={{ marginTop: '8px' }} placeholder="____"/>
           </div>
 
         </form>
@@ -176,12 +163,11 @@ export default function Home() {
         <button 
           className="btn-primary" 
           onClick={handleSubmit} 
-          disabled={!hasAgreed || isUploading} // Locks button physically
+          disabled={!hasAgreed || isUploading} 
         >
-          {isUploading ? "Uploading..." : "Upload Photo"}
+          {isUploading ? "Se încarcă poza..." : "Încarcă Poza"}
         </button>
         
-        {/* The Signature Link */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
           <a 
             href="https://www.instagram.com/rares_dragan/" 
@@ -192,8 +178,7 @@ export default function Home() {
               alignItems: 'center', 
               gap: '4px', 
               textDecoration: 'none',
-              color: 'rgba(255, 255, 255, 0.7)', 
-              textShadow: '0px 1px 4px rgba(0,0,0,0.9)', 
+              color: 'var(--text-muted)', 
               fontSize: '10px', 
               textTransform: 'uppercase', 
               letterSpacing: '0.5px', 

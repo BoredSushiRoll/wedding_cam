@@ -1,19 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;600&display=swap');
+
 /* --- BASE SYSTEM --- */
 :root {
-  --bg-base: #0a0a0a;
-  --bg-card: #171717;
-  --bg-input: #262626;
-  --text-main: #f5f5f5;
-  --text-muted: #a3a3a3;
-  --accent-green: #16a34a;
-  --accent-hover: #15803d;
-  --border-color: #333333;
+  /* THE WEDDING PALETTE */
+  --bg-base: #F8F5F0; /* Warm ivory paper */
+  --bg-card: rgba(255, 255, 255, 0.65); /* Frosted white for cards */
+  --bg-input: rgba(255, 255, 255, 0.5); /* Light input fields */
+  --text-main: #2C3A29; /* Deep olive/forest green */
+  --text-muted: #5A6B54; /* Muted sage */
+  --accent-green: #4A5D43; /* Button and highlight green */
+  --accent-hover: #3A4A34; 
+  --border-color: rgba(44, 58, 41, 0.15); /* Soft ink borders */
+  
+  /* THE ENGINEER'S "CREPONAT" TEXTURE */
+  --paper-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
 body {
   background-color: var(--bg-base);
+  background-image: var(--paper-grain);
   color: var(--text-main);
-  font-family: var(--font-inter), sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
@@ -22,7 +29,7 @@ body {
 }
 
 h1, h2, h3 {
-  font-family: var(--font-playfair), serif;
+  font-family: 'Playfair Display', serif;
   font-weight: 700;
   letter-spacing: 1px;
 }
@@ -46,6 +53,7 @@ h1, h2, h3 {
   flex-direction: column;
   position: relative;
   background-color: var(--bg-base);
+  background-image: var(--paper-grain); /* Pulls texture into the bounding box */
   border-left: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
 }
@@ -53,7 +61,7 @@ h1, h2, h3 {
 .glass-header, .glass-footer {
   flex: none;
   padding: 16px 24px;
-  background: rgba(10, 10, 10, 0.7);
+  background: rgba(248, 245, 240, 0.85); /* Ivory frost */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 10;
@@ -63,21 +71,23 @@ h1, h2, h3 {
 }
 .glass-header { 
   top: 0; 
-  border-bottom: 1px solid rgba(255,255,255,0.05); 
+  border-bottom: 1px solid var(--border-color); 
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03); /* Soft paper shadow */
 }
 .glass-footer { 
   bottom: 0; 
-  border-top: 1px solid rgba(255,255,255,0.05); 
+  border-top: 1px solid var(--border-color); 
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
 }
 
 /* The scrollable middle track */
 .scroll-track {
   flex: 1;
   overflow-y: auto;
-  padding: 80px 20px 100px 20px; /* Pads the content so it doesn't hide behind the glass */
+  padding: 68px 20px 100px 20px; /* Pads the content so it doesn't hide behind the glass */
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -92,33 +102,34 @@ h1, h2, h3 {
   width: 100%;
   padding: 16px;
   background-color: var(--accent-green);
-  color: white;
+  color: #F8F5F0;
   border: none;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.1s ease, background-color 0.2s ease;
-  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+  box-shadow: 0 4px 14px rgba(74, 93, 67, 0.2);
 }
 .btn-primary:active {
   transform: scale(0.96); /* Hardware tactile click response */
 }
 .btn-primary:disabled {
-  background-color: var(--bg-input);
-  color: #555;
+  background-color: var(--text-muted);
+  color: var(--bg-base);
   box-shadow: none;
   cursor: not-allowed;
   transform: none;
+  opacity: 0.5;
 }
 
 .btn-secondary {
-  background-color: var(--bg-card);
+  background-color: transparent;
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 12px;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
   cursor: pointer;
@@ -126,6 +137,7 @@ h1, h2, h3 {
 }
 .btn-secondary:active {
   transform: scale(0.95);
+  background-color: rgba(44, 58, 41, 0.05); /* Ink bleed on press */
 }
 
 /* --- FORMS & CARDS --- */
@@ -134,7 +146,7 @@ h1, h2, h3 {
   border: 1px solid var(--border-color);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02); /* Dialed back hacker shadow */
   flex-shrink: 0; /* FORBIDS Flexbox from crushing the cards */
   width: 100%;
   box-sizing: border-box;
@@ -146,14 +158,19 @@ h1, h2, h3 {
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  color: white;
+  color: var(--text-main);
   box-sizing: border-box;
   font-family: inherit;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 .input-field:focus {
   outline: none;
   border-color: var(--accent-green);
+  background-color: rgba(255, 255, 255, 0.9);
+}
+.input-field::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
 }
 
 .pin-input {
