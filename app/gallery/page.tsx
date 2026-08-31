@@ -8,6 +8,7 @@ type Photo = {
   imageUrl: string;
   message: string;
   timestamp: string;
+  signature?: string; // New TS Definition
 };
 
 export default function Gallery() {
@@ -77,9 +78,12 @@ export default function Gallery() {
               </div>
               
               <div style={{ padding: '16px 20px', backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
-                {post.message && (
+                {/* CONDITIONAL MESSAGE & SIGNATURE RENDER */}
+                {(post.message || post.signature) && (
                   <p style={{ margin: '0 0 8px 0', fontSize: '15px', lineHeight: '1.4', color: 'var(--text-main)' }}>
-                    {post.message}
+                    {post.message && <span>{post.message}</span>}
+                    {post.message && post.signature && <span style={{ color: 'var(--text-muted)' }}> — </span>}
+                    {post.signature && <span style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>{post.signature}</span>}
                   </p>
                 )}
                 <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, display: 'block', textAlign: 'left' }}>
@@ -105,25 +109,38 @@ export default function Gallery() {
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '6px', 
+              gap: '4px', 
               textDecoration: 'none',
               color: 'rgba(255, 255, 255, 0.7)', 
               textShadow: '0px 1px 4px rgba(0,0,0,0.9)', 
-              transition: 'color 0.2s ease'
+              fontSize: '10px', 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.5px', 
+              fontWeight: 600,
+              transition: 'opacity 0.2s ease'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-green)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
           >
-            <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
-              Made by Rareș Drăgan
+            <span>Made by</span>
+            <span style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '4px', 
+              color: 'var(--accent-green)', 
+              textDecoration: 'underline', 
+              textUnderlineOffset: '3px',
+              textDecorationThickness: '1px'
+            }}>
+              Rareș Drăgan
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                <line x1="6" x2="6" y1="2" y2="4" />
+                <line x1="10" x2="10" y1="2" y2="4" />
+                <line x1="14" x2="14" y1="2" y2="4" />
+              </svg>
             </span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
-              <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-              <line x1="6" x2="6" y1="2" y2="4" />
-              <line x1="10" x2="10" y1="2" y2="4" />
-              <line x1="14" x2="14" y1="2" y2="4" />
-            </svg>
           </a>
         </div>
       </footer>

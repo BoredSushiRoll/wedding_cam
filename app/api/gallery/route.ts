@@ -20,10 +20,10 @@ export async function GET() {
 
     const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
     
-    // Pull the entire sheet matrix
+    // Pull the entire sheet matrix (Expanded to Column E for the Signature)
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'A:D', 
+      range: 'A:E', 
     });
 
     const rows = response.data.values;
@@ -39,6 +39,7 @@ export async function GET() {
       imageUrl: row[1],
       message: row[2] || "",
       timestamp: row[3] || "",
+      signature: row[4] || "", // Capturing the 5th column
     })).reverse(); // The reverse() function flips the array so the newest row (bottom of sheet) is index 0
 
     console.log(`SUCCESS! Extracted ${galleryData.length} records.`);

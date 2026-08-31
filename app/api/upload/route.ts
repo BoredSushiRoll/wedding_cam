@@ -15,6 +15,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const message = formData.get('message') as string;
+    const signature = formData.get('signature') as string;
     const pin = formData.get('pin') as string;
 
     // 1. The Firewall
@@ -23,9 +24,9 @@ export async function POST(req: Request) {
 
     console.log("=== SERVER INTERCEPT: INITIATING GOOGLE HANDSHAKE ===");
     console.log(`Processing: ${file.name} | Size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`Message payload: ${message || 'No message'}`);
+    console.log(`Message payload: ${message || 'No message'} | Signature: ${signature || 'Anonymous'}`);
 
-    // 2. Authenticate using OAuth2 (Impersonating Rareș directly)
+    // 2. Authenticate using OAuth2
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -77,16 +78,16 @@ export async function POST(req: Request) {
     }).format(now);
     const timestamp = `@ ${timeString}`;
 
-    // 3. Blast the row into Google Sheets
+    // 3. Blast the 5-column row into Google Sheets
     const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
     
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'A:D', // Blanket range bypasses localization naming errors
+      range: 'A:E', // Expanded to 5 columns
       valueInputOption: 'USER_ENTERED',
       requestBody: {
-        // The data matrix matching our frontend Gallery needs
-        values: [[fileId, directImageUrl, message || "", timestamp]],
+        // Data matrix updated to catch the signature
+        values: [[fileId, directImageUrl, message || "", timestamp, signature || ""]],
       },
     });
 
