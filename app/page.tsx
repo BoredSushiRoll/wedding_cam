@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {
@@ -10,6 +10,11 @@ export default function Home() {
   const [message, setMessage] = useState('')
   const [pin, setPin] = useState('')
   const [hasAgreed, setHasAgreed] = useState(false)
+  const [isUploading, setIsUploading] = useState(false) // The hardware lock
+
+  // Pointers to the hidden file inputs
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -19,9 +24,15 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validation checks
     if (!hasAgreed) return alert("You must agree to the terms first.")
     if (!file) return alert("Take a photo or choose one from your gallery.")
     if (pin !== '1209') return alert("Invalid PIN.")
+    if (isUploading) return // Failsafe for rapid double-clicking
+
+    // Lock the UI
+    setIsUploading(true)
 
     const formData = new FormData()
     formData.append('file', file)
@@ -30,10 +41,15 @@ export default function Home() {
 
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
-      if (res.ok) router.push('/gallery')
-      else alert("Access Denied.")
+      if (res.ok) {
+        router.push('/gallery')
+      } else {
+        alert("Access Denied.")
+        setIsUploading(false) // Only unlock if the server rejects it
+      }
     } catch (err) {
       alert("Network transmission failed.")
+      setIsUploading(false) // Unlock if the network crashes
     }
   }
 
@@ -56,12 +72,55 @@ export default function Home() {
             </span>
           </label>
 
-          <label className="card" style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-color)', cursor: hasAgreed ? 'pointer' : 'not-allowed', opacity: hasAgreed ? 1 : 0.5 }}>
-            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
-              {file ? file.name : "Tap to Camera or Gallery"}
-            </span>
-            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} disabled={!hasAgreed}/>
-          </label>
+          {/* DUAL-INPUT UI BLOCK */}
+          <div style={{ display: 'flex', gap: '12px', opacity: hasAgreed ? 1 : 0.5, pointerEvents: hasAgreed ? 'auto' : 'none' }}>
+            
+            {/* Camera Trigger */}
+            <div 
+              className="card" 
+              onClick={() => cameraInputRef.current?.click()}
+              style={{ flex: 1, height: '120px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-color)', cursor: 'pointer', transition: 'border-color 0.2s' }}
+            >
+              <span style={{ fontSize: '24px', marginBottom: '4px' }}>📷</span>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px' }}>Camera</span>
+            </div>
+
+            {/* Gallery Trigger */}
+            <div 
+              className="card" 
+              onClick={() => galleryInputRef.current?.click()}
+              style={{ flex: 1, height: '120px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-color)', cursor: 'pointer', transition: 'border-color 0.2s' }}
+            >
+              <span style={{ fontSize: '24px', marginBottom: '4px' }}>🖼️</span>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '14px' }}>Gallery</span>
+            </div>
+
+          </div>
+
+          {/* Filename Readout */}
+          {file && (
+            <div style={{ textAlign: 'center', color: 'var(--accent-green)', fontSize: '13px', fontWeight: 'bold' }}>
+              Selected: {file.name}
+            </div>
+          )}
+
+          {/* HIDDEN HARDWARE INPUTS */}
+          <input 
+            type="file" 
+            accept="image/*" 
+            capture="environment" // iOS/Android OS Camera intercept
+            style={{ display: 'none' }} 
+            ref={cameraInputRef} 
+            onChange={handleFileChange} 
+          />
+          <input 
+            type="file" 
+            accept="image/*" // OS Gallery picker
+            style={{ display: 'none' }} 
+            ref={galleryInputRef} 
+            onChange={handleFileChange} 
+          />
+          {/* END DUAL-INPUT BLOCK */}
 
           <div>
             <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Message</label>
@@ -77,8 +136,12 @@ export default function Home() {
       </div>
 
       <footer className="glass-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <button className="btn-primary" onClick={handleSubmit} disabled={!hasAgreed}>
-          Upload Photo
+        <button 
+          className="btn-primary" 
+          onClick={handleSubmit} 
+          disabled={!hasAgreed || isUploading} // Locks button physically
+        >
+          {isUploading ? "Uploading..." : "Upload Photo"}
         </button>
         
         {/* The Signature Link */}
