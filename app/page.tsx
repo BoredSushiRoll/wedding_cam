@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import imageCompression from 'browser-image-compression'
 
 export default function Home() {
   const router = useRouter()
@@ -34,22 +35,35 @@ export default function Home() {
     // Lock the UI
     setIsUploading(true)
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('message', message)
-    formData.append('pin', pin)
-
     try {
+      // THE COMPRESSION ENGINE
+      const options = {
+        maxSizeMB: 3, 
+        maxWidthOrHeight: 1920, 
+        useWebWorker: true, 
+      }
+      
+      const compressedFile = await imageCompression(file, options)
+
+      // Build the payload with the crushed file
+      const formData = new FormData()
+      formData.append('file', compressedFile)
+      formData.append('message', message)
+      formData.append('pin', pin)
+
+      // Transmit to Vercel
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      
       if (res.ok) {
         router.push('/gallery')
       } else {
         alert("Access Denied.")
-        setIsUploading(false) // Only unlock if the server rejects it
+        setIsUploading(false) 
       }
     } catch (err) {
-      alert("Network transmission failed.")
-      setIsUploading(false) // Unlock if the network crashes
+      console.error(err)
+      alert("Network transmission or compression failed.")
+      setIsUploading(false)
     }
   }
 
