@@ -3,8 +3,6 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
-
-
 export async function GET() {
   try {
     console.log("=== SERVER INTERCEPT: FETCHING GALLERY LEDGER ===");
@@ -35,13 +33,17 @@ export async function GET() {
     }
 
     // Map Google's raw 2D array into a sanitized JSON object
-    const galleryData = rows.map((row) => ({
-      id: row[0],
-      imageUrl: row[1],
-      message: row[2] || "",
-      timestamp: row[3] || "",
-      signature: row[4] || "", // Capturing the 5th column
-    })).reverse(); // The reverse() function flips the array so the newest row (bottom of sheet) is index 0
+    // THE HARDWARE FIREWALL: Filter out empty rows before mapping
+    const galleryData = rows
+      .filter((row) => row[0] && row[0].trim() !== '') 
+      .map((row) => ({
+        id: row[0],
+        imageUrl: row[1],
+        message: row[2] || "",
+        timestamp: row[3] || "",
+        signature: row[4] || "", // Capturing the 5th column
+      }))
+      .reverse(); // The reverse() function flips the array so the newest row (bottom of sheet) is index 0
 
     console.log(`SUCCESS! Extracted ${galleryData.length} records.`);
     return NextResponse.json({ items: galleryData });
