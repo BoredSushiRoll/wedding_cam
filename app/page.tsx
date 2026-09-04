@@ -7,28 +7,37 @@ import imageCompression from 'browser-image-compression'
 export default function Home() {
   const router = useRouter()
   
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [message, setMessage] = useState('')
   const [signature, setSignature] = useState('') 
   const [pin, setPin] = useState('')
   const [hasAgreed, setHasAgreed] = useState(false)
+  
   const [isUploading, setIsUploading] = useState(false) 
+  const [progressText, setProgressText] = useState("Încarcă Poza")
 
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
+    if (e.target.files) {
+      const selected = Array.from(e.target.files)
+      
+      if (selected.length > 10) {
+        alert("Poți selecta maxim 10 poze o dată.")
+        setFiles(selected.slice(0, 10))
+      } else {
+        setFiles(selected)
+      }
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!hasAgreed) return alert("Trebuie să bifezi căsuța de sus prima dată!")
-    if (!file) return alert("Fă o poză sau alege una din galeria proprie!")
-    if (pin !== '1209') return alert("PIN Greșit!")
+    if (!hasAgreed) return alert("Trebuie să fii de acord cu termenii.")
+    if (files.length === 0) return alert("Selectează cel puțin o poză.")
+    if (pin !== '1209') return alert("PIN incorect!")
     if (isUploading) return 
 
     setIsUploading(true)
@@ -37,29 +46,50 @@ export default function Home() {
       const options = {
         maxSizeMB: 3, 
         maxWidthOrHeight: 1920, 
-        useWebWorker: true, 
+        useWebWorker: false, // Keep this false to protect the mobile main thread
       }
       
-      const compressedFile = await imageCompression(file, options)
-
-      const formData = new FormData()
-      formData.append('file', compressedFile)
-      formData.append('message', message)
-      formData.append('signature', signature) 
-      formData.append('pin', pin)
-
-      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      // PHASE 1: EAGER COMPRESSION 
+      // Read all files NOW before the OS revokes the security token
+      const compressedPayloads = []
       
-      if (res.ok) {
-        router.push('/gallery')
-      } else {
-        alert("Access Denied.")
-        setIsUploading(false) 
+      for (let i = 0; i < files.length; i++) {
+        setProgressText(`Procesare... ${i + 1}/${files.length}`)
+        const compressedFile = await imageCompression(files[i], options)
+        compressedPayloads.push(compressedFile)
       }
+
+      // PHASE 2: NETWORK TRANSMISSION
+      // Send the safely compressed cache to Vercel
+      for (let i = 0; i < compressedPayloads.length; i++) {
+        setProgressText(`Încărcare... ${i + 1}/${compressedPayloads.length}`)
+        
+        const formData = new FormData()
+        formData.append('file', compressedPayloads[i])
+        formData.append('message', message)
+        formData.append('signature', signature) 
+        formData.append('pin', pin)
+        
+        const res = await fetch('/api/upload', { method: 'POST', body: formData })
+        
+        if (!res.ok) {
+          throw new Error(`Upload failed for file ${i + 1}`)
+        }
+
+        // Tiny network breather
+        if (i < compressedPayloads.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 200))
+        }
+      }
+      
+      // Circuit complete. Route to gallery.
+      router.push('/gallery')
+      
     } catch (err) {
-      console.error(err)
-      alert("Network transmission or compression failed.")
+      console.error("CRITICAL BATCH UPLOAD ERROR:", err)
+      alert("A apărut o eroare la încărcare. Verifică conexiunea.")
       setIsUploading(false)
+      setProgressText("Încarcă Poza")
     }
   }
 
@@ -86,7 +116,7 @@ export default function Home() {
           <label className="card" style={{ padding: '16px', display: 'flex', gap: '12px', cursor: 'pointer' }}>
             <input type="checkbox" checked={hasAgreed} onChange={(e) => setHasAgreed(e.target.checked)} style={{ transform: 'scale(1.2)', accentColor: 'var(--accent-green)' }}/>
             <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-              Sunt de acord să încarc poza în drive-ul mirilor și confirm că dețin drepturile pentru poză.
+              Sunt de acord să încărc poza în drive-ul mirilor și confirm că dețin drepturile pentru poză.
             </span>
           </label>
 
@@ -119,9 +149,9 @@ export default function Home() {
 
           </div>
 
-          {file && (
+          {files.length > 0 && (
             <div style={{ textAlign: 'center', color: 'var(--accent-green)', fontSize: '13px', fontWeight: 'bold' }}>
-              Ales: {file.name}
+              Selectat: {files.length} {files.length === 1 ? 'poză' : 'poze'}
             </div>
           )}
 
@@ -136,13 +166,14 @@ export default function Home() {
           <input 
             type="file" 
             accept="image/*" 
+            multiple
             style={{ display: 'none' }} 
             ref={galleryInputRef} 
             onChange={handleFileChange} 
           />
 
           <div>
-            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Mesaj pentru miri (Opțional)</label>
+            <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Mesaj Pentru Miri (Opțional)</label>
             <textarea className="input-field" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={250} rows={3} style={{ resize: 'none', marginTop: '8px' }} placeholder="Scrie aici mesajul..."/>
           </div>
 
@@ -153,7 +184,17 @@ export default function Home() {
 
           <div>
             <label style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>PIN De La Masă</label>
-            <input type="password" className="input-field pin-input" value={pin} onChange={(e) => setPin(e.target.value)} maxLength={4} style={{ marginTop: '8px' }} placeholder="____"/>
+            <input 
+              type="password" 
+              className="input-field pin-input" 
+              value={pin} 
+              onChange={(e) => setPin(e.target.value)} 
+              onFocus={(e) => e.target.placeholder = ''}
+              onBlur={(e) => e.target.placeholder = '____'}
+              maxLength={4} 
+              style={{ marginTop: '8px' }} 
+              placeholder="____"
+            />
           </div>
 
         </form>
@@ -165,7 +206,7 @@ export default function Home() {
           onClick={handleSubmit} 
           disabled={!hasAgreed || isUploading} 
         >
-          {isUploading ? "Se încarcă poza..." : "Încarcă Poza"}
+          {isUploading ? progressText : "Încarcă Poza"}
         </button>
         
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
