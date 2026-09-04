@@ -1,8 +1,9 @@
+// CRITICAL: Kills the Next.js cache so the gallery always shows live data
+export const dynamic = 'force-dynamic'; 
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
-// CRITICAL: Kills the Next.js cache so the gallery always shows live data
-export const dynamic = 'force-dynamic'; 
+
 
 export async function GET() {
   try {

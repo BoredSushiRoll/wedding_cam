@@ -19,7 +19,7 @@ export default function Gallery() {
   useEffect(() => {
     async function loadGallery() {
       try {
-        const response = await fetch('/api/gallery');
+        const response = await fetch('/api/gallery', { cache: 'no-store' });
         if (!response.ok) throw new Error("Fetch failed");
         
         const data = await response.json();
